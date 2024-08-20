@@ -6,3 +6,5 @@
 3. Train Reward Classifier
 4. Use PPO to finetune model using Reward Classifier
 5. Evaluate base model vs. finetuned
+
+## Please find the reward model at [appraising_hate_speech](https://huggingface.co/nairdanus/appraising_hate_speech)
