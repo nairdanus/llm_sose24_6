@@ -300,83 +300,38 @@ class AccelerateRLTrainer(BaseRLTrainer):
             save_function=self.accelerator.save,
             is_main_process=self.accelerator.is_main_process,
             state_dict=self.accelerator.get_state_dict(self.model),
+            safe_serialization=False,
             **kwargs,
         )
 
         if self.accelerator.is_main_process:
-            self.tokenizer.save_pretrained(directory)
-
-    # def save(self, directory: Optional[str] = None, **kwargs):
-    #     """Creates a checkpoint for the optimizer, scheduler and the model"""
-    #     dst_dir = directory or self.config.train.checkpoint_dir
-    #     self.accelerator.save_state(dst_dir, **kwargs)
-
-    #     if self.config.model.peft_config is not None and self.accelerator.is_main_process:
-    #         # Remove "pytorch_model.bin" because it contains more than necessary,
-    #         # let save_pretrained recreate it with just the value heads.
-    #         model_file = os.path.join(dst_dir, "pytorch_model.bin")
-    #         if os.path.exists(model_file):
-    #             os.remove(model_file)
-    #         self.accelerator.unwrap_model(self.model).save_pretrained(dst_dir)
-
+            self.tokenizer.save_pretrained(directory,safe_serialization=False)
 
     def save(self, directory: Optional[str] = None, **kwargs):
-        """Creates a checkpoint for the optimizer, scheduler, and the model using safetensors"""
+        """Creates a checkpoint for the optimizer, scheduler and the model"""
         dst_dir = directory or self.config.train.checkpoint_dir
-        os.makedirs(dst_dir, exist_ok=True)
-
-        # Save the entire state using safetensors
-        if self.config.model.peft_config is not None and self.accelerator.is_main_process:
-            # Prepare the model state dictionary
-            model = self.accelerator.unwrap_model(self.model)
-
-            # Save using safetensors
-            safetensors_file = os.path.join(dst_dir, "model.safetensors")
-            save_model(model, safetensors_file)
-
-        # Save the rest of the state (e.g., optimizer, scheduler)
-        # Note: This part is left to be saved as usual because safetensors mainly handles model weights
         self.accelerator.save_state(dst_dir, **kwargs)
 
-        # Optionally, remove any existing PyTorch model file to avoid confusion
-        pytorch_model_file = os.path.join(dst_dir, "pytorch_model.bin")
-        if os.path.exists(pytorch_model_file):
-            os.remove(pytorch_model_file)
-
-
-    # def load(self, directory: Optional[str] = None, **kwargs):
-    #     """Loads the checkpoint of the optimizer, scheduler and the model"""
-    #     if self.config.model.peft_config is not None:
-
-    #         def load_state_hook(models: List[torch.nn.Module], input_dir: str):
-    #             with self.accelerator.main_process_first():
-    #                 for model in models:
-    #                     model.from_pretrained(input_dir)
-
-    #         self.accelerator.register_load_state_pre_hook(load_state_hook)
-
-    #     self.accelerator.load_state(directory or self.config.train.checkpoint_dir, **kwargs)
+        if self.config.model.peft_config is not None and self.accelerator.is_main_process:
+            # Remove "pytorch_model.bin" because it contains more than necessary,
+            # let save_pretrained recreate it with just the value heads.
+            model_file = os.path.join(dst_dir, "pytorch_model.bin")
+            if os.path.exists(model_file):
+                os.remove(model_file)
+            self.accelerator.unwrap_model(self.model).save_pretrained(dst_dir, safe_serialization=False)
 
     def load(self, directory: Optional[str] = None, **kwargs):
-        """Loads the checkpoint of the optimizer, scheduler, and the model"""
-        load_dir = directory or self.config.train.checkpoint_dir
-
+        """Loads the checkpoint of the optimizer, scheduler and the model"""
         if self.config.model.peft_config is not None:
+
             def load_state_hook(models: List[torch.nn.Module], input_dir: str):
                 with self.accelerator.main_process_first():
                     for model in models:
-                        # Construct the path to the safetensors file
-                        safetensors_file = os.path.join(input_dir, "model.safetensors")
-                        
-                        # Load the state_dict from the safetensors file
-                        state_dict = load_model(model, safetensors_file)
+                        model.from_pretrained(input_dir)
 
-            # Register the hook to load model weights from safetensors
             self.accelerator.register_load_state_pre_hook(load_state_hook)
 
-        # Load the remaining state (e.g., optimizer, scheduler) using the usual method
-        self.accelerator.load_state(load_dir, **kwargs)
-
+        self.accelerator.load_state(directory or self.config.train.checkpoint_dir, **kwargs)
 
     def add_eval_pipeline(self, eval_pipeline):
         """Adds a evalution pipeline with validation prompts"""
@@ -645,7 +600,7 @@ class AccelerateRLTrainer(BaseRLTrainer):
 
                         pretrained_directory = os.path.join(directory, "hf_model")
                         logger.info(f"Saving pretrained model into {pretrained_directory}")
-                        self.save_pretrained(pretrained_directory)
+                        self.save_pretrained(pretrained_directory, safe_serialization=False)
 
                     stats["time/forward"] = forward_time
                     stats["time/backward"] = backward_time
@@ -681,7 +636,7 @@ class AccelerateRLTrainer(BaseRLTrainer):
 
                                 pretrained_directory = os.path.join(directory, "hf_model")
                                 logger.info(f"Saving pretrained model into {pretrained_directory}")
-                                self.save_pretrained(pretrained_directory)
+                                self.save_pretrained(pretrained_directory,safe_serialization=False)
 
                     desc = " | ".join(f"{k}: {v:.2f}" for k, v in stats.items() if k.startswith("loss"))
                     tbar.set_description(f"[{desc}]")
