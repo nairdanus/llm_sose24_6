@@ -1,10 +1,12 @@
-# LLM_SoSe24_6
+### Reinforcement Learning from Human Feedback for Context-Aware Hate-Speech Discrimination
 
-1. Create Dataset
-2. Model Predictions (2 per prompt)
-2. Human Annotation( 1300 per person) 
-3. Train Reward Classifier
-4. Use PPO to finetune model using Reward Classifier
-5. Evaluate base model vs. finetuned
+This repostitory provides a method to fine-tune GPT-2 to be more context-sensitive when detecting hate-speech by Reinforcement Learning Human Feedback
 
-## Please find the reward model at [appraising_hate_speech](https://huggingface.co/nairdanus/appraising_hate_speech)
+Reward model can be trained or accessed directly from https://huggingface.co/nairdanus/appraising_hate_speech
+
+# Dataset
+
+The HateWic Dataset containing contextually sensitive senses was adapted to be used for RLHF
+
+# Run Code
+For relevant packages and training of the models please refer to RLHF_with_Custom_Datasets.ipynb. 
