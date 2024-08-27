@@ -9,4 +9,12 @@ Reward model can be trained or accessed directly from https://huggingface.co/nai
 The HateWic Dataset containing contextually sensitive senses was adapted to be used for RLHF
 
 ## Run Code
-For relevant packages and training of the models please refer to RLHF_with_Custom_Datasets.ipynb. 
+
+### Training the Model
+Please refer to RLHF_with_Custom_Datasets.ipynb. After installing the necessary trlx repository, replace the following files with the respective files in src/trlx_adjustments/:
+- trlx/trlx/models/modeling_base.py
+- trlx/trlx/trainer/accelerate_base_trainer.py
+- trlx/trlx/trainer/accelerate_ppo_trainer.py
+
+### Evaluating the model
+Please refer to lime.ipynb.

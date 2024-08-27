@@ -7,7 +7,10 @@ import json
 
 result = []
 
-with open("HateWiC_T5Defs_MajorityLabels.csv", "r") as f:
+ORIGINAL_DATA = "data/HateWiC_T5Defs_MajorityLabels.csv"
+OUTPUT_FILE = "data/data.json"
+
+with open(ORIGINAL_DATA, "r") as f:
     spamreader = csv.reader(f, delimiter=';')
     i = 0
     for row in spamreader:
@@ -26,8 +29,8 @@ with open("HateWiC_T5Defs_MajorityLabels.csv", "r") as f:
 
         prompt = f"Given this context: '{sent}', is the word '{tgt}' considered hate speech and give an explanation why."
         
-        answer1 = f"{"Yes" if gold else "No"}, because here the definition of '{tgt}' is '{_def}'."
-        answer2 = f"{"No" if gold else "Yes"}, because here the definition of '{tgt}' is '{T5_def}'."
+        answer1 = f"{'Yes' if gold else 'No'}, because here the definition of '{tgt}' is '{_def}'."
+        answer2 = f"{'No' if gold else 'Yes'}, because here the definition of '{tgt}' is '{T5_def}'."
 
         out = {
             "id": _id,
@@ -45,5 +48,5 @@ with open("HateWiC_T5Defs_MajorityLabels.csv", "r") as f:
         #     writer = csv.writer(out_file, delimiter=";")
         #     writer.writerow(out)
 
-with open("data.json", "w") as f:
+with open(OUTPUT_FILE, "w") as f:
     json.dump({"annotations": result}, f, indent=4)
