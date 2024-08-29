@@ -4,6 +4,8 @@ This repostitory provides a method to fine-tune GPT-2 to be more context-sensiti
 
 Reward model can be trained or accessed directly from https://huggingface.co/nairdanus/appraising_hate_speech
 
+Policy model can be found at https://huggingface.co/nairdanus/gpt2-rlhf-finetuned-hate
+
 ## Dataset
 
 The HateWic Dataset containing contextually sensitive senses was adapted to be used for RLHF
